@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-audio-analyzer": ["../src/index"],
+      "expo-audio-analyzer/*": ["../src/*"]
+    }
+  }
+}
