@@ -31,7 +31,7 @@ public class ExpoAudioAnalyzerModule: Module {
         try file.read(into: buffer)
 
         guard let floatChannelData = buffer.floatChannelData else {
-          completion(.failure(NSError(domain: "com.yourdomain.ExpoAudioAnalyzer", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get channel data"])))
+          completion(.failure(NSError(domain: "ExpoAudioAnalyzer", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get channel data"])))
           return
         }
 

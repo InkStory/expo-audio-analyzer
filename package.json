@@ -1,6 +1,6 @@
 {
   "name": "expo-audio-analyzer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "This module provides developers with a powerful tool for performing detailed audio analysis directly within their mobile applications.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
