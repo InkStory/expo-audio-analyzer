@@ -34,9 +34,9 @@ Run `npx pod-install` after installing the npm package.
 ```jsx
 import * as ExpoAudioAnalyzer from "expo-audio-analyzer";
 
-async () => {
+async function main() {
     const amplitudes = await ExpoAudioAnalyzer.getAmplitudesAsync(pathToAudioFile);
-    ...
+    // ...
 }
 ```
 
