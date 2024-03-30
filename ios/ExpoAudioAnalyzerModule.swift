@@ -1,43 +1,61 @@
 import ExpoModulesCore
+import AVFoundation
 
 public class ExpoAudioAnalyzerModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
   public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoAudioAnalyzer')` in JavaScript.
     Name("ExpoAudioAnalyzer")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
+    AsyncFunction("getAmplitudesAsync") { (filepath: String, samples: Int?, promise: Promise) in
+      // If samples is nil, default to 70
+      let effectiveSamples = samples ?? 70
+      self.analyzeAudioFile(at: filepath, samples: effectiveSamples) { result in
+        switch result {
+        case .success(let averageAmplitude):
+          promise.resolve(averageAmplitude)
+        case .failure(let error):
+          promise.reject("AudioAnalysisError", error.localizedDescription, error)
+        }
+      }
     }
+  }
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
+  private func analyzeAudioFile(at filePath: String, samples: Int, completion: @escaping (Result<Float, Error>) -> Void) {
+    DispatchQueue.global(qos: .userInitiated).async {
+      do {
+        let fileURL = URL(fileURLWithPath: filePath)
+        let file = try AVAudioFile(forReading: fileURL)
+        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: file.processingFormat.sampleRate, channels: file.processingFormat.channelCount, interleaved: false)!
+        let frameCount = UInt32(file.length)
+        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
 
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(ExpoAudioAnalyzerView.self) {
-      // Defines a setter for the `name` prop.
-      Prop("name") { (view: ExpoAudioAnalyzerView, prop: String) in
-        print(prop)
+        try file.read(into: buffer)
+
+        guard let floatChannelData = buffer.floatChannelData else {
+          completion(.failure(NSError(domain: "com.yourdomain.ExpoAudioAnalyzer", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get channel data"])))
+          return
+        }
+
+        var totalAmplitude: Float = 0
+        let channelCount = Int(buffer.format.channelCount)
+        let length = Int(buffer.frameLength)
+
+        // Calculate the step to sample the requested number of amplitudes.
+        let step = max(1, length / samples)
+
+        var actualSamplesCount = 0
+        for channel in 0..<channelCount {
+          for frame in stride(from: 0, to: length, by: step) {
+            totalAmplitude += abs(floatChannelData[channel][frame]) // Using absolute value for amplitude
+            actualSamplesCount += 1
+          }
+        }
+
+        // Calculate the average amplitude.
+        let averageAmplitude = totalAmplitude / Float(actualSamplesCount)
+
+        completion(.success(averageAmplitude))
+      } catch {
+        completion(.failure(error))
       }
     }
   }
