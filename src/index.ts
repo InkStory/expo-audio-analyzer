@@ -6,15 +6,10 @@ export async function getAmplitudesAsync(
   source: string | number,
   samples?: number
 ) {
-  samples = samples ?? 70;
-
-  console.log(source, typeof source);
+  samples = samples || 70;
 
   if (typeof source === "number") {
     const asset = Asset.fromModule(source);
-
-    console.log(asset.localUri, asset.uri);
-
     await asset.downloadAsync();
     source = asset.localUri || asset.uri;
   }
