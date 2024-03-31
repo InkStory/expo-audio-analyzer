@@ -1,6 +1,6 @@
 {
   "name": "expo-audio-analyzer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "This module provides developers with a powerful tool for performing detailed audio analysis directly within their mobile applications.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -28,7 +28,9 @@
   "author": "Sergey Zelenov <github@zelenov.su> (https://github.com/tadjik1)",
   "license": "MIT",
   "homepage": "https://github.com/inkstory/expo-audio-analyzer#readme",
-  "dependencies": {},
+  "dependencies": {
+    "expo-asset": "~9.0.2"
+  },
   "devDependencies": {
     "@types/react": "^18.0.25",
     "expo-module-scripts": "^3.4.1",
